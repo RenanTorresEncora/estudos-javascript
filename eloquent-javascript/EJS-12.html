@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Exercises from Chapter 14</h1>
+    <h2>Build a Table</h2>
+
+    <p>An HTML table is built with the following tag structure:</p>
+
+    <table>
+      <tr>
+        <th>name</th>
+        <th>height</th>
+        <th>place</th>
+      </tr>
+      <tr>
+        <td>Kilimanjaro</td>
+        <td>5895</td>
+        <td>Tanzania</td>
+      </tr>
+    </table>
+
+    <p>
+      For each row, the &lt;table&gt; tag contains a &lt;tr&gt; tag. Inside of
+      these &lt;tr&gt; tags, we can put cell elements: either heading cells
+      (&lt;th&gt;) or regular cells (&lt;td&gt;).
+    </p>
+
+    <p>
+      Given a data set of mountains, an array of objects with name, height, and
+      place properties, generate the DOM structure for a table that enumerates
+      the objects. It should have one column per key and one row per object,
+      plus a header row with &lt;th&gt; elements at the top, listing the column
+      names.
+    </p>
+
+    <p>
+      Write this so that the columns are automatically derived from the objects,
+      by taking the property names of the first object in the data.
+    </p>
+
+    <p>
+      Add the resulting table to the element with an id attribute of "mountains"
+      so that it becomes visible in the document.
+    </p>
+
+    <p>
+      Once you have this working, right-align cells that contain number values
+      by setting their style.textAlign property to "right".
+    </p>
+
+    <h1>Mountains</h1>
+
+    <div id="mountains"></div>
+
+    <script>
+      const MOUNTAINS = [
+        { name: "Kilimanjaro", height: 5895, place: "Tanzania" },
+        { name: "Everest", height: 8848, place: "Nepal" },
+        { name: "Mount Fuji", height: 3776, place: "Japan" },
+        { name: "Vaalserberg", height: 323, place: "Netherlands" },
+        { name: "Denali", height: 6168, place: "United States" },
+        { name: "Popocatepetl", height: 5465, place: "Mexico" },
+        { name: "Mont Blanc", height: 4808, place: "Italy/France" },
+      ];
+
+      function createTableFromArray(array) {
+        const table = document.createElement("table");
+        const trHeadings = document.createElement("tr");
+        Object.keys(array[0]).forEach((key) => {
+          trHeadings.appendChild(createCell("th", key));
+        });
+        table.appendChild(trHeadings);
+        array.forEach((item) => {
+          const { name, height, place } = item;
+          const tableRow = document.createElement("tr");
+          tableRow.appendChild(createCell("td", name));
+          tableRow.appendChild(createCell("td", height, "right"));
+          tableRow.appendChild(createCell("td", place));
+          table.appendChild(tableRow);
+        });
+
+        function createCell(type, text, align) {
+          const cell = document.createElement(type);
+          cell.textContent = text;
+          cell.style.textAlign = align;
+          return cell;
+        }
+        return table;
+      }
+      const mountains_div = document.getElementById("mountains");
+      mountains_div.appendChild(createTableFromArray(MOUNTAINS));
+    </script>
+
+    <h2>Elements by tag name</h2>
+    <p>
+      The document.getElementsByTagName method returns all child elements with a
+      given tag name. Implement your own version of this as a function that
+      takes a node and a string (the tag name) as arguments and returns an array
+      containing all descendant element nodes with the given tag name.
+    </p>
+
+    <p>
+      To find the tag name of an element, use its nodeName property. But note
+      that this will return the tag name in all uppercase. Use the toLowerCase
+      or toUpperCase string methods to compensate for this.
+    </p>
+    <div id="elements-by-tag-name">
+      <h1>Heading with a <span>span</span> element.</h1>
+      <p>A paragraph with <span>one</span>, <span>two</span> spans.</p>
+    </div>
+
+    <script>
+      function byTagName(node, tagName, array = []) {
+        if (node.nodeType == Node.ELEMENT_NODE) {
+          for (let child of node.childNodes) {
+            if (byTagName(child, tagName, array)) {
+              if (child.nodeName.toLowerCase() == tagName) {
+                array.push(child.nodeName.toLowerCase());
+              }
+            }
+          }
+        }
+        return array;
+      }
+
+      console.log(
+        byTagName(document.getElementById("elements-by-tag-name"), "h1").length
+      );
+      // → 1
+      console.log(
+        byTagName(document.getElementById("elements-by-tag-name"), "span")
+          .length
+      );
+      // → 3
+      let para = document
+        .getElementById("elements-by-tag-name")
+        .querySelector("p");
+      console.log(byTagName(para, "span").length);
+      // → 2
+    </script>
+
+    <h2>The cat’s hat</h2>
+    <p>
+      Extend the cat animation defined earlier so that both the cat and his hat
+      (&lt;img src="img/hat.png"&gt;) orbit at opposite sides of the ellipse.
+    </p>
+
+    <p>
+      Or make the hat circle around the cat. Or alter the animation in some
+      other interesting way.
+    </p>
+
+    <p>
+      To make positioning multiple objects easier, it is probably a good idea to
+      switch to absolute positioning. This means that top and left are counted
+      relative to the top left of the document. To avoid using negative
+      coordinates, which would cause the image to move outside of the visible
+      page, you can add a fixed number of pixels to the position values.
+    </p>
+    <style>
+      body {
+        min-height: 400px;
+      }
+    </style>
+    <img src="img/cat.png" id="cat" style="position: relative" />
+    <img src="img/hat.png" id="hat" style="position: relative" />
+    <script>
+      let cat = document.querySelector("#cat");
+      let hat = document.querySelector("#hat");
+
+      let angle = 0;
+      let lastTime = null;
+      function animate(time) {
+        if (lastTime != null) angle += (time - lastTime) * 0.001;
+        lastTime = time;
+        cat.style.top = Math.sin(angle) * 40 + 40 + "px";
+        cat.style.left = Math.cos(angle) * 200 + 200 + "px";
+
+        // Your extensions here.
+        hat.style.top = Math.sin(-angle + 180) * 40 + "px";
+        hat.style.left = Math.cos(-angle + 180) * 200 + 130 + "px";
+
+        requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+    </script>
+  </body>
+</html>
